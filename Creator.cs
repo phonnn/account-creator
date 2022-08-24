@@ -241,6 +241,7 @@ namespace Amazon_console
                 QwetyInput(mailAddress);
             }
 
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
             (int X, int Y) nextPos = getTapFromUI(uiXml, "NEXT");
             adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
 
@@ -257,6 +258,7 @@ namespace Amazon_console
             (int X, int Y) passwordPos = getTapFromUI(uiXml, "password");
             adb.Execute(deviceId, $"input tap {passwordPos.X} {passwordPos.Y}");
             QwetyInput(password);
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
 
             (int X, int Y) nextPos = getTapFromUI(uiXml, "NEXT");
             adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
@@ -311,34 +313,52 @@ namespace Amazon_console
             return true;
         }
 
-        public bool AmazonRegister(string password)
+        public bool AmazonOpen()
         {
             adb.Execute(deviceId, "am force-stop com.amazon.venezia");
-            adb.Execute(deviceId, "am start -n com.amazon.venezia/com.amazon.identity.auth.device.AuthPortalUIActivity");
+            adb.Execute(deviceId, "am start -n com.amazon.venezia/com.amazon.venezia.Launcher");
 
-            //bool check;
-            //string uiXml;
-            //do
-            //{
-            //    adb.Sleep(2000); //wait for Amazon Registration load
-            //    uiXml = GetUI();
-            //    check = uiXml.Contains("Create account");
-            //} while (!check);
+            bool check;
+            string uiXml;
+            do
+            {
+                adb.Sleep(2000); //wait for Amazon Registration load
+                uiXml = GetUI();
+                check = uiXml.Contains("Welcome to the Amazon Appstore");
+            } while (!check);
 
-            //(int X, int Y) namePos = getTapFromUI(uiXml, "ap_customer_name");
-            //adb.Execute(deviceId, $"input tap {namePos.X} {namePos.Y}");
-            //QwetyInput(firstName + " " + lastName);
+            (int X, int Y) createPos = getTapFromUI(uiXml, "Create a new Amazon account");
+            adb.Execute(deviceId, $"input tap {createPos.X} {createPos.Y}");
 
-            //(int X, int Y) emailPos = getTapFromUI(uiXml, "ap_email");
-            //adb.Execute(deviceId, $"input tap {emailPos.X} {emailPos.Y}");
-            //QwetyInput(mailAddress);
+            return true;
+        }
 
-            //(int X, int Y) passPos = getTapFromUI(uiXml, "ap_email");
-            //adb.Execute(deviceId, $"input tap {passPos.X} {passPos.Y}");
-            //QwetyInput(password);
+        public bool AmazonRegister(string password)
+        {
+            string uiXml = GetUI();
+            if (!uiXml.Contains("Create account"))
+            {
+                return false;
+            }
 
-            //(int X, int Y) createPos = getTapFromUI(uiXml, "Create your Amazon account");
-            //adb.Execute(deviceId, $"input tap {createPos.X} {createPos.Y}");
+            (int X, int Y) namePos = getTapFromUI(uiXml, "ap_customer_name");
+            adb.Execute(deviceId, $"input tap {namePos.X} {namePos.Y}");
+            QwetyInput(firstName + " " + lastName);
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
+
+            (int X, int Y) emailPos = getTapFromUI(uiXml, "ap_email");
+            adb.Execute(deviceId, $"input tap {emailPos.X} {emailPos.Y}");
+            QwetyInput(mailAddress);
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
+
+            (int X, int Y) passPos = getTapFromUI(uiXml, "ap_email");
+            adb.Execute(deviceId, $"input tap {passPos.X} {passPos.Y}");
+            QwetyInput(password);
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
+
+            (int X, int Y) createPos = getTapFromUI(uiXml, "Create your Amazon account");
+            adb.Execute(deviceId, $"input tap {createPos.X} {createPos.Y}");
+
             return true;
         }
     }

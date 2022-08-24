@@ -57,7 +57,19 @@ namespace Amazon_console
                     }
                 } while (!allDone);
 
-                //creator.AmazonRegister("Kenail123");
+                creator.AmazonOpen();
+                for(int i = 0; i < 3; i++)
+                {
+                    bool check = creator.AmazonRegister("kenail123");
+                    if (check)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        adb.Sleep(2000);
+                    }
+                }
 
             }
         }
