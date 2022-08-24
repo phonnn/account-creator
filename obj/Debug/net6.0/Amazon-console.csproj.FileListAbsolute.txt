@@ -1,0 +1,15 @@
+C:\Users\hungp\Desktop\Amazon-console\bin\Debug\net6.0\Amazon-console.exe
+C:\Users\hungp\Desktop\Amazon-console\bin\Debug\net6.0\Amazon-console.deps.json
+C:\Users\hungp\Desktop\Amazon-console\bin\Debug\net6.0\Amazon-console.runtimeconfig.json
+C:\Users\hungp\Desktop\Amazon-console\bin\Debug\net6.0\Amazon-console.dll
+C:\Users\hungp\Desktop\Amazon-console\bin\Debug\net6.0\Amazon-console.pdb
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.csproj.AssemblyReference.cache
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.AssemblyInfoInputs.cache
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.AssemblyInfo.cs
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.csproj.CoreCompileInputs.cache
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.dll
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\refint\Amazon-console.dll
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.pdb
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\Amazon-console.genruntimeconfig.cache
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net6.0\ref\Amazon-console.dll

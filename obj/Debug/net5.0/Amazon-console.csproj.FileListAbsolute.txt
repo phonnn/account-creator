@@ -1,0 +1,5 @@
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net5.0\Amazon-console.csproj.AssemblyReference.cache
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net5.0\Amazon-console.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net5.0\Amazon-console.AssemblyInfoInputs.cache
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net5.0\Amazon-console.AssemblyInfo.cs
+C:\Users\hungp\Desktop\Amazon-console\obj\Debug\net5.0\Amazon-console.csproj.CoreCompileInputs.cache
