@@ -18,7 +18,7 @@ namespace Amazon_console
             List<string> devices = adb.Devices();
             foreach (var deviceStr in devices)
             {
-                bool allDone = false;
+                bool endCheck = false;
                 string deviceId = deviceStr.Split("\t")[0];
                 Creator creator = new(deviceId);
                 Console.WriteLine(creator.DeviceId);
@@ -27,7 +27,9 @@ namespace Amazon_console
                     creator.WifiCheck();
                     creator.ScreenOn();
                     creator.Unlock();
-                    creator.OpenMailRegister();
+                    bool openCheck = creator.OpenMailRegister();
+                    if (!openCheck) continue;
+
                     bool nameCheck = creator.NameInput();
                     if (!nameCheck) continue;
 
@@ -47,18 +49,14 @@ namespace Amazon_console
                     if (!reviewCheck) continue;
 
                     bool privacyCheck = creator.Privacy();
-                    if (privacyCheck)
-                    {
-                        allDone = true;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                } while (!allDone);
+                    if (!privacyCheck) continue;
+                        
+                    endCheck = creator.LastStep();
+                } while (!endCheck);
 
+                adb.Sleep(1000);
                 creator.AmazonOpen();
-                for(int i = 0; i < 3; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     bool check = creator.AmazonRegister("kenail123");
                     if (check)

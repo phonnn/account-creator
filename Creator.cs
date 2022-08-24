@@ -138,12 +138,14 @@ namespace Amazon_console
             adb.Execute(deviceId, "am start -n com.google.android.gms/.auth.uiflows.addaccount.AccountIntroActivity");
             bool check;
             string uiXml;
+            int attempt = 0;
             do
             {
+                if(attempt > 3) return false;
+                attempt += 1;
                 adb.Sleep(2000); //wait for AccountIntroActivity load
                 uiXml = GetUI();
                 check = uiXml.Contains("text=\"Sign in\" resource-id=\"headingText\"");
-
             } while (!check);
 
             (int X, int Y) position = getTapFromUI(uiXml, "android.widget.Spinner");
@@ -239,9 +241,9 @@ namespace Amazon_console
                 int num = rnd.Next();
                 mailAddress = firstName.ToLower() + lastName.ToLower() + num.ToString();
                 QwetyInput(mailAddress);
+                adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
             }
 
-            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
             (int X, int Y) nextPos = getTapFromUI(uiXml, "NEXT");
             adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
 
@@ -258,7 +260,6 @@ namespace Amazon_console
             (int X, int Y) passwordPos = getTapFromUI(uiXml, "password");
             adb.Execute(deviceId, $"input tap {passwordPos.X} {passwordPos.Y}");
             QwetyInput(password);
-            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
 
             (int X, int Y) nextPos = getTapFromUI(uiXml, "NEXT");
             adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
@@ -312,6 +313,26 @@ namespace Amazon_console
 
             return true;
         }
+        
+        public bool LastStep()
+        {
+            string uiXml;
+            bool check;
+            int attempt = 0;
+            do
+            {
+                if (attempt > 3) return false;
+                adb.Sleep(3000); //wait for Service load
+                uiXml = GetUI();
+                check = uiXml.Contains("Google services");
+                attempt += 1;
+            } while (!check);
+
+            adb.Execute(deviceId, $"input swipe 500 1700 100 100");
+            adb.Execute(deviceId, $"input tap 867 1788"); //Accept
+
+            return true;
+        }
 
         public bool AmazonOpen()
         {
@@ -351,7 +372,7 @@ namespace Amazon_console
             QwetyInput(mailAddress);
             adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
 
-            (int X, int Y) passPos = getTapFromUI(uiXml, "ap_email");
+            (int X, int Y) passPos = getTapFromUI(uiXml, "ap_password");
             adb.Execute(deviceId, $"input tap {passPos.X} {passPos.Y}");
             QwetyInput(password);
             adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
