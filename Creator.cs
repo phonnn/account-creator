@@ -10,6 +10,7 @@ namespace Amazon_console
         private string firstName;
         private string lastName;
         private string mailAddress;
+        private string mailPassword;
         private readonly string adbPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName + "\\adb.exe";
         private readonly ADBClient adb = new();
         private readonly HttpClient client = new();
@@ -261,6 +262,8 @@ namespace Amazon_console
             adb.Execute(deviceId, $"input tap {passwordPos.X} {passwordPos.Y}");
             QwetyInput(password);
 
+            mailPassword = password; //save password
+
             (int X, int Y) nextPos = getTapFromUI(uiXml, "NEXT");
             adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
 
@@ -330,6 +333,185 @@ namespace Amazon_console
 
             adb.Execute(deviceId, $"input swipe 500 1700 100 100");
             adb.Execute(deviceId, $"input tap 867 1788"); //Accept
+
+            return true;
+        }
+
+        public bool OpenGmail()
+        {
+            adb.Execute(deviceId, "am force-stop com.google.android.gm");
+            adb.Execute(deviceId, "am force-stop com.google.android.gms");
+            adb.Execute(deviceId, "am start -n com.google.android.gm/com.google.android.gm.ui.MailActivityGmail");
+
+            bool newCheck;
+            bool oldCheck;
+            string uiXml;
+            do
+            {
+                adb.Sleep(2000); //wait for Gmail load
+                uiXml = GetUI();
+                newCheck = uiXml.Contains("New in Gmail");
+                oldCheck = uiXml.Contains("Search in mail");
+            } while (!newCheck & !oldCheck);
+
+            if (oldCheck) return true;
+
+            (int X, int Y) acceptPos = getTapFromUI(uiXml, "Got it");
+            adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
+
+            adb.Sleep(3000); //wait for Gmail load
+            uiXml = GetUI();
+            if (!uiXml.Contains(mailAddress))
+            {
+                return false;
+            }
+
+            acceptPos = getTapFromUI(uiXml, "TAKE ME TO GMAIL");
+            adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
+
+            return true;
+        }
+
+        public bool OpenGoogleAccount()
+        {
+            string uiXml = GetUI();
+
+            if (uiXml.Contains("Google Meet, now in Gmail"))
+            {
+                (int X, int Y) acceptPos = getTapFromUI(uiXml, "Got it");
+                adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
+                uiXml = GetUI();
+            }
+
+            if (!uiXml.Contains("Search in mail"))
+            {
+                return false;
+            }
+
+            (int X, int Y) ringPos = getTapFromUI(uiXml, "com.google.android.gm:id/og_apd_ring_view");
+            adb.Execute(deviceId, $"input tap {ringPos.X} {ringPos.Y}");
+
+            uiXml = GetUI();
+            if (!uiXml.Contains("Google Account"))
+            {
+                return false;
+            }
+
+            (int X, int Y) accountPos = getTapFromUI(uiXml, "Google Account");
+            adb.Execute(deviceId, $"input tap {accountPos.X} {accountPos.Y}");
+
+            bool check;
+            int attempt = 0;
+            (int X, int Y) startedPos;
+            do
+            {
+                attempt++;
+                adb.Sleep(2000); //wait for get Started page load
+                uiXml = GetUI();
+                check = uiXml.Contains("com.google.android.gms:id/skip_button");
+                if (check)
+                {
+                    startedPos = getTapFromUI(uiXml, "com.google.android.gms:id/skip_button");
+                    adb.Execute(deviceId, $"input tap {startedPos.X} {startedPos.Y}");
+                }
+            } while (!check & attempt < 2);
+
+            return true;
+        }
+
+        public bool OpenSecurity()
+        {
+            string uiXml = GetUI();
+            if (!uiXml.Contains("You have security recommendations"))
+            {
+                return false;
+            }
+            (int X, int Y) securityPos = getTapFromUI(uiXml, "You have security recommendations");
+            adb.Execute(deviceId, $"input tap {securityPos.X} {securityPos.Y}");
+
+            bool check;
+            int attempt = 0;
+            do
+            {
+                if (attempt > 2) return false;
+                attempt++;
+                adb.Sleep(2000);
+                uiXml = GetUI();
+            } while (!uiXml.Contains("Add ways to verify"));
+
+            (int X, int Y) addPos = getTapFromUI(uiXml, "Add a recovery email");
+            adb.Execute(deviceId, $"input tap {addPos.X} {addPos.Y}");
+
+            return true;
+        }
+        
+        public bool AddSecurity()
+        {
+            string uiXml;
+            bool check;
+            int attempt = 0;
+            do
+            {
+                if (attempt > 2) return false;
+                attempt++;
+                adb.Sleep(2000);
+                uiXml = GetUI();
+            } while (!uiXml.Contains("To continue, first verify"));
+
+            (int X, int Y) passPos = getTapFromUI(uiXml, "android.widget.EditText");
+            adb.Execute(deviceId, $"input tap {passPos.X} {passPos.Y}");
+
+            QwetyInput(mailPassword);
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
+
+            (int X, int Y) nextPos = getTapFromUI(uiXml, "Next");
+            adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
+
+            return true;
+        }
+
+        public bool InputRecoveryMail()
+        {
+            string uiXml = GetUI();
+
+            if (!uiXml.Contains("Add recovery email"))
+            {
+                return false;
+            }
+            (int X, int Y) inputPos = getTapFromUI(uiXml, "android.widget.EditText");
+            adb.Execute(deviceId, $"input tap {inputPos.X} {inputPos.Y}");
+
+            string recoveryMail = mailAddress.Replace("gmail", "yopmail");
+            QwetyInput(recoveryMail);
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
+
+            (int X, int Y) nextPos = getTapFromUI(uiXml, "Next");
+            adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
+
+            return true;
+        }
+        public bool VerifyRecovery()
+        {
+            string uiXml = GetUI();
+
+            if (!uiXml.Contains("Verify your recovery email"))
+            {
+                return false;
+            }
+            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
+
+            (int X, int Y) skipPos = getTapFromUI(uiXml, "Verify later");
+            adb.Execute(deviceId, $"input tap {skipPos.X} {skipPos.Y}");
+
+            uiXml = GetUI();
+               
+            if (!uiXml.Contains("You can update this anytime"))
+            {
+                return false;
+            }
+
+            (int X, int Y) donePos = getTapFromUI(uiXml, "Done");
+            adb.Execute(deviceId, $"input tap {donePos.X} {donePos.Y}");
 
             return true;
         }

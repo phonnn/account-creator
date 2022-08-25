@@ -18,7 +18,8 @@ namespace Amazon_console
             List<string> devices = adb.Devices();
             foreach (var deviceStr in devices)
             {
-                bool endCheck = false;
+                bool createdCheck = false;
+                bool recoveryCheck = false;
                 string deviceId = deviceStr.Split("\t")[0];
                 Creator creator = new(deviceId);
                 Console.WriteLine(creator.DeviceId);
@@ -30,8 +31,15 @@ namespace Amazon_console
                     bool openCheck = creator.OpenMailRegister();
                     if (!openCheck) continue;
 
-                    bool nameCheck = creator.NameInput();
-                    if (!nameCheck) continue;
+                    try
+                    {
+                        bool nameCheck = creator.NameInput();
+                        if (!nameCheck) continue;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
 
                     bool genderCheck = creator.BirthdayAndGender();
                     if (!genderCheck) continue;
@@ -50,24 +58,45 @@ namespace Amazon_console
 
                     bool privacyCheck = creator.Privacy();
                     if (!privacyCheck) continue;
-                        
-                    endCheck = creator.LastStep();
-                } while (!endCheck);
+
+                    createdCheck = creator.LastStep();
+                } while (!createdCheck);
 
                 adb.Sleep(1000);
-                creator.AmazonOpen();
-                for (int i = 0; i < 3; i++)
+                do
                 {
-                    bool check = creator.AmazonRegister("kenail123");
-                    if (check)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        adb.Sleep(2000);
-                    }
-                }
+                    bool openCheck = creator.OpenGmail();
+                    if (!openCheck) continue;
+
+                    bool accountCheck = creator.OpenGoogleAccount();
+                    if (!accountCheck) continue;
+
+                    bool securityCheck = creator.OpenSecurity();
+                    if (!securityCheck) continue;
+
+                    bool addSecurityCheck = creator.AddSecurity();
+                    if (!addSecurityCheck) continue;
+
+                    bool inputCheck = creator.InputRecoveryMail();
+                    if (!inputCheck) continue;
+
+                    recoveryCheck = creator.VerifyRecovery();
+                } while (!recoveryCheck);
+
+                //adb.Sleep(1000);
+                //creator.AmazonOpen();
+                //for (int i = 0; i < 3; i++)
+                //{
+                //    bool check = creator.AmazonRegister("kenail123");
+                //    if (check)
+                //    {
+                //        break;
+                //    }
+                //    else
+                //    {
+                //        adb.Sleep(2000);
+                //    }
+                //}
 
             }
         }
