@@ -41,6 +41,7 @@ namespace Amazon_console
 
             [' '] = "input tap 540 1830",
             ['.'] = "input tap 865 1830",
+            ['\n'] = "input tap 995 1830",
 
             ['1'] = "input tap 54 1330",
             ['2'] = "input tap 155 1330",
