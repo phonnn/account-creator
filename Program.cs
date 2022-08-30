@@ -20,78 +20,92 @@ namespace Amazon_console
             {
                 bool createdCheck = false;
                 bool recoveryCheck = false;
+                bool chromeCheck = false;
+                bool amazonCheck = false;
+                bool amazonLoginCheck = false;
                 string deviceId = deviceStr.Split("\t")[0];
                 Creator creator = new(deviceId);
                 Console.WriteLine(creator.DeviceId);
-                //do
-                //{
-                //    creator.WifiCheck();
-                //    creator.ScreenOn();
-                //    creator.Unlock();
-                //    bool openCheck = creator.OpenMailRegister();
-                //    if (!openCheck) continue;
 
-                //    try
-                //    {
-                //        bool nameCheck = creator.NameInput();
-                //        if (!nameCheck) continue;
-                //    }
-                //    catch
-                //    {
-                //        continue;
-                //    }
+                do
+                {
+                    creator.WifiCheck();
+                    creator.ScreenOn();
+                    creator.Unlock();
+                    bool openCheck = creator.OpenMailRegister();
+                    if (!openCheck) continue;
 
-                //    bool genderCheck = creator.BirthdayAndGender();
-                //    if (!genderCheck) continue;
+                    try
+                    {
+                        bool nameCheck = creator.NameInput();
+                        if (!nameCheck) continue;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
 
-                //    bool addressCheck = creator.PickGmail();
-                //    if (!addressCheck) continue;
+                    bool genderCheck = creator.BirthdayAndGender();
+                    if (!genderCheck) continue;
 
-                //    bool passCheck = creator.PasswordInput("kenail123");
-                //    if (!passCheck) continue;
+                    bool addressCheck = creator.PickGmail();
+                    if (!addressCheck) continue;
 
-                //    bool phoneCheck = creator.AddPhone();
-                //    if (!phoneCheck) continue;
+                    bool passCheck = creator.PasswordInput("Anhminh123");
+                    if (!passCheck) continue;
 
-                //    bool reviewCheck = creator.Review();
-                //    if (!reviewCheck) continue;
+                    bool phoneCheck = creator.AddPhone();
+                    if (!phoneCheck) continue;
 
-                //    bool privacyCheck = creator.Privacy();
-                //    if (!privacyCheck) continue;
+                    bool reviewCheck = creator.Review();
+                    if (!reviewCheck) continue;
 
-                //    createdCheck = creator.LastStep();
-                //} while (!createdCheck);
+                    bool privacyCheck = creator.Privacy();
+                    if (!privacyCheck) continue;
 
-                //adb.Sleep(1000);
-                //do
-                //{
-                //    bool openCheck = creator.OpenGmail();
-                //    if (!openCheck) continue;
-
-                //    bool accountCheck = creator.OpenGoogleAccount();
-                //    if (!accountCheck) continue;
-
-                //    bool securityCheck = creator.OpenSecurity();
-                //    if (!securityCheck) continue;
-
-                //    bool addSecurityCheck = creator.AddSecurity();
-                //    if (!addSecurityCheck) continue;
-
-                //    bool inputCheck = creator.InputRecoveryMail();
-                //    if (!inputCheck) continue;
-
-                //    recoveryCheck = creator.VerifyRecovery();
-                //} while (!recoveryCheck);
+                    createdCheck = creator.LastStep();
+                } while (!createdCheck);
 
                 adb.Sleep(1000);
+                do
+                {
+                    creator.ScreenOn();
+                    creator.Unlock();
+                    recoveryCheck = creator.OpenGmail();
 
-                creator.OpenChrome();
-                creator.AmazonSignin();
-                creator.AmazonRegisterChrome();
+                    //bool openCheck = creator.OpenGmail();
+                    //if (!openCheck) continue;
 
-                creator.AmazonOpen(0);
-                creator.AmazonLogin();
-                creator.AmazonMobileCheck();
+                    //bool accountCheck = creator.OpenGoogleAccount();
+                    //if (!accountCheck) continue;
+
+                    //bool securityCheck = creator.OpenSecurity();
+                    //if (!securityCheck) continue;
+
+                    //bool addSecurityCheck = creator.AddSecurity();
+                    //if (!addSecurityCheck) continue;
+
+                    //bool inputCheck = creator.InputRecoveryMail();
+                    //if (!inputCheck) continue;
+
+                    //recoveryCheck = creator.VerifyRecovery();
+                } while (!recoveryCheck) ;
+
+                adb.Sleep(1000);
+                do
+                {
+                    if (!creator.OpenChrome()) continue;
+                    if (!creator.AmazonSigninPage()) continue;
+
+                    amazonCheck = creator.AmazonRegisterChrome();
+                } while (!amazonCheck);
+
+                do
+                {
+                    if (!creator.AmazonOpen(0)) continue;
+                    if (!creator.AmazonLogin()) continue;
+                    amazonLoginCheck = creator.AmazonMobileCheck();
+                } while (!amazonLoginCheck);
             }
         }
     }

@@ -48,23 +48,12 @@ namespace Amazon_console
         {
             adb.Execute(deviceId, "am force-stop com.google.android.gms");
             adb.Execute(deviceId, "am start -n com.google.android.gms/.auth.uiflows.addaccount.AccountIntroActivity");
-            bool check;
-            string uiXml;
-            int attempt = 0;
-            do
-            {
-                if(attempt > 3) return false;
-                attempt += 1;
-                adb.Sleep(2000); //wait for AccountIntroActivity load
-                uiXml = GetUI();
-                check = uiXml.Contains("text=\"Sign in\" resource-id=\"headingText\"");
-            } while (!check);
-
+            
+            if (!CheckUI("text=\"Sign in\" resource-id=\"headingText\"")) return false;
             (int X, int Y) position = getTapFromUI(uiXml, "android.widget.Spinner");
-
             adb.Execute(deviceId, $"input tap {position.X} {position.Y}");
 
-            uiXml = GetUI();
+            if (!CheckUI("For myself")) return false;
             position = getTapFromUI(uiXml, "For myself");
             adb.Execute(deviceId, $"input tap {position.X} {position.Y}");
 
@@ -73,12 +62,11 @@ namespace Amazon_console
 
         public bool NameInput()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Enter your name\""))
+            if (!CheckUI("text=\"Enter your name\"")) return false;
+            if (string.IsNullOrEmpty(firstName) | string.IsNullOrEmpty(lastName))
             {
-                return false;
+                (firstName, lastName) = RandomName();
             }
-            (firstName, lastName) = RandomName();
 
             (int X, int Y) position = getTapFromUI(uiXml, "firstName"); //First Name
             adb.Execute(deviceId, $"input tap {position.X} {position.Y}");
@@ -98,11 +86,7 @@ namespace Amazon_console
 
         public bool BirthdayAndGender()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Enter your birthday and gender\""))
-            {
-                return false;
-            }
+            if (!CheckUI("text=\"Enter your birthday and gender\"")) return false;
 
             int index = rnd.Next(0, 2);
 
@@ -134,11 +118,7 @@ namespace Amazon_console
         }
         public bool PickGmail()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Choose your Gmail address Pick a Gmail address or create your own\""))
-            {
-                return false;
-            }
+            if (!CheckUI("text=\"Choose your Gmail address Pick a Gmail address or create your own\"")) return false;
 
             (int X, int Y) pickPos = getTapFromUI(uiXml, "selectionc0"); //pick 1st gmail
             (int X, int Y) createPos = getTapFromUI(uiXml, "Create your own Gmail address"); //create new gmail
@@ -163,11 +143,7 @@ namespace Amazon_console
         }
         public bool PasswordInput(string password)
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Create a strong password\""))
-            {
-                return false;
-            }
+            if (!CheckUI("text=\"Create a strong password\"")) return false;
 
             (int X, int Y) passwordPos = getTapFromUI(uiXml, "password");
             adb.Execute(deviceId, $"input tap {passwordPos.X} {passwordPos.Y}");
@@ -175,6 +151,7 @@ namespace Amazon_console
 
             mailPassword = password; //save password
 
+            uiXml = GetUI();
             (int X, int Y) nextPos = getTapFromUI(uiXml, "NEXT");
             adb.Execute(deviceId, $"input tap {nextPos.X} {nextPos.Y}");
 
@@ -182,24 +159,16 @@ namespace Amazon_console
         }
         public bool AddPhone()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Add phone number?\""))
-            {
-                return false;
-            }
+            if (!CheckUI("text=\"Add phone number?\"")) return false;
 
-            adb.Execute(deviceId, $"input swipe 500 1700 100 100");
-            adb.Execute(deviceId, $"input tap 115 1788"); //Skip
+            adb.Execute(deviceId, "input swipe 500 1700 100 100");
+            adb.Execute(deviceId, "input tap 115 1788"); //Skip
 
             return true;
         }
         public bool Review()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Review your account info\""))
-            {
-                return false;
-            }
+            if (!CheckUI("text=\"Review your account info\"")) return false;
 
             //get email address
             string pattern = @"\w+@gmail.com";
@@ -215,35 +184,21 @@ namespace Amazon_console
 
         public bool Privacy()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("text=\"Privacy and Terms\""))
-            {
-                return false;
-            }
+            if (!CheckUI("text=\"Privacy and Terms\"")) return false;
 
-            adb.Execute(deviceId, $"input swipe 500 1700 100 100");
-            adb.Execute(deviceId, $"input swipe 500 1700 100 100");
-            adb.Execute(deviceId, $"input tap 867 1788"); //I agree
+            adb.Execute(deviceId, "input swipe 500 1700 100 100");
+            adb.Execute(deviceId, "input swipe 500 1700 100 100");
+            adb.Execute(deviceId, "input tap 867 1788"); //I agree
 
             return true;
         }
         
         public bool LastStep()
         {
-            string uiXml;
-            bool check;
-            int attempt = 0;
-            do
-            {
-                if (attempt > 3) return false;
-                adb.Sleep(3000); //wait for Service load
-                uiXml = GetUI();
-                check = uiXml.Contains("Google services");
-                attempt += 1;
-            } while (!check);
+            if (!CheckUI("Google services")) return false;
 
-            adb.Execute(deviceId, $"input swipe 500 1700 100 100");
-            adb.Execute(deviceId, $"input tap 867 1788"); //Accept
+            adb.Execute(deviceId, "input swipe 500 1700 100 100");
+            adb.Execute(deviceId, "input tap 867 1788"); //Accept
 
             return true;
         }
@@ -254,28 +209,13 @@ namespace Amazon_console
             adb.Execute(deviceId, "am force-stop com.google.android.gms");
             adb.Execute(deviceId, "am start -n com.google.android.gm/com.google.android.gm.ui.MailActivityGmail");
 
-            bool newCheck;
-            bool oldCheck;
-            string uiXml;
-            do
-            {
-                adb.Sleep(2000); //wait for Gmail load
-                uiXml = GetUI();
-                newCheck = uiXml.Contains("New in Gmail");
-                oldCheck = uiXml.Contains("Search in mail");
-            } while (!newCheck & !oldCheck);
-
-            if (oldCheck) return true;
+            if (CheckUI("Search in mail")) return true;
+            if (!CheckUI("New in Gmail")) return false;
 
             (int X, int Y) acceptPos = getTapFromUI(uiXml, "Got it");
             adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
 
-            adb.Sleep(3000); //wait for Gmail load
-            uiXml = GetUI();
-            if (!uiXml.Contains(mailAddress))
-            {
-                return false;
-            }
+            if (!CheckUI(mailAddress)) return false;
 
             acceptPos = getTapFromUI(uiXml, "TAKE ME TO GMAIL");
             adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
@@ -285,71 +225,48 @@ namespace Amazon_console
 
         public bool OpenGoogleAccount()
         {
-            string uiXml = GetUI();
-
-            if (uiXml.Contains("Google Meet, now in Gmail"))
+            
+            if (CheckUI("Google Meet, now in Gmail"))
             {
                 (int X, int Y) acceptPos = getTapFromUI(uiXml, "Got it");
                 adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
-                uiXml = GetUI();
             }
 
-            if (!uiXml.Contains("Search in mail"))
-            {
-                return false;
-            }
-
+            if (!CheckUI("Search in mail")) return false;
             (int X, int Y) ringPos = getTapFromUI(uiXml, "com.google.android.gm:id/og_apd_ring_view");
             adb.Execute(deviceId, $"input tap {ringPos.X} {ringPos.Y}");
 
-            uiXml = GetUI();
-            if (!uiXml.Contains("Google Account"))
-            {
-                return false;
-            }
-
-            (int X, int Y) accountPos = getTapFromUI(uiXml, "Google Account");
+            if (!CheckUI("Manage accounts on this device")) return false;
+            (int X, int Y) accountPos = getTapFromUI(uiXml, "android.widget.Button");
             adb.Execute(deviceId, $"input tap {accountPos.X} {accountPos.Y}");
 
-            bool check;
-            int attempt = 0;
-            (int X, int Y) startedPos;
-            do
+            if (!CheckUI("com.google.android.gms:id/skip_button")) 
             {
-                attempt++;
-                adb.Sleep(2000); //wait for get Started page load
-                uiXml = GetUI();
-                check = uiXml.Contains("com.google.android.gms:id/skip_button");
-                if (check)
-                {
-                    startedPos = getTapFromUI(uiXml, "com.google.android.gms:id/skip_button");
-                    adb.Execute(deviceId, $"input tap {startedPos.X} {startedPos.Y}");
-                }
-            } while (!check & attempt < 2);
+                (int X, int Y) startedPos = getTapFromUI(uiXml, "com.google.android.gms:id/skip_button");
+                adb.Execute(deviceId, $"input tap {startedPos.X} {startedPos.Y}");
+            }
 
             return true;
         }
 
         public bool OpenSecurity()
         {
-            string uiXml = GetUI();
-            if (!uiXml.Contains("You have security recommendations"))
-            {
-                return false;
-            }
+            if (!CheckUI("You have security recommendations")) return false;
             (int X, int Y) securityPos = getTapFromUI(uiXml, "You have security recommendations");
             adb.Execute(deviceId, $"input tap {securityPos.X} {securityPos.Y}");
 
-            bool check;
-            int attempt = 0;
+            if (!CheckUI("Security Checkup")) return false;
+            adb.Execute(deviceId, "input swipe 500 1700 100 100");
+
+            (int X, int Y) recoveryPos;
             do
             {
-                if (attempt > 2) return false;
-                attempt++;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-            } while (!uiXml.Contains("Add ways to verify"));
+                if (!CheckUI("Issues found in sign-in &amp; recovery Add ways to verify it's you")) return false;
+                recoveryPos = getTapFromUI(uiXml, "Issues found in sign-in &amp; recovery Add ways to verify it's you");
+                adb.Execute(deviceId, $"input tap {recoveryPos.X} {recoveryPos.Y}");
+            } while (recoveryPos.X != 0 & recoveryPos.Y != 0);
 
+            if (!CheckUI("Add a recovery email")) return false;
             (int X, int Y) addPos = getTapFromUI(uiXml, "Add a recovery email");
             adb.Execute(deviceId, $"input tap {addPos.X} {addPos.Y}");
 
@@ -358,16 +275,7 @@ namespace Amazon_console
         
         public bool AddSecurity()
         {
-            string uiXml;
-            bool check;
-            int attempt = 0;
-            do
-            {
-                if (attempt > 2) return false;
-                attempt++;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-            } while (!uiXml.Contains("To continue, first verify"));
+            if (!CheckUI("To continue, first verify")) return false;
 
             (int X, int Y) passPos = getTapFromUI(uiXml, "android.widget.EditText");
             adb.Execute(deviceId, $"input tap {passPos.X} {passPos.Y}");
@@ -383,12 +291,8 @@ namespace Amazon_console
 
         public bool InputRecoveryMail()
         {
-            string uiXml = GetUI();
+            if (!CheckUI("Add recovery email")) return false;
 
-            if (!uiXml.Contains("Add recovery email"))
-            {
-                return false;
-            }
             (int X, int Y) inputPos = getTapFromUI(uiXml, "android.widget.EditText");
             adb.Execute(deviceId, $"input tap {inputPos.X} {inputPos.Y}");
 
@@ -403,24 +307,14 @@ namespace Amazon_console
         }
         public bool VerifyRecovery()
         {
-            string uiXml = GetUI();
+            if (!CheckUI("Verify your recovery email")) return false;
 
-            if (!uiXml.Contains("Verify your recovery email"))
-            {
-                return false;
-            }
             adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
 
             (int X, int Y) skipPos = getTapFromUI(uiXml, "Verify later");
             adb.Execute(deviceId, $"input tap {skipPos.X} {skipPos.Y}");
 
-            uiXml = GetUI();
-               
-            if (!uiXml.Contains("You can update this anytime"))
-            {
-                return false;
-            }
-
+            if (!CheckUI("You can update this anytime")) return false;
             (int X, int Y) donePos = getTapFromUI(uiXml, "Done");
             adb.Execute(deviceId, $"input tap {donePos.X} {donePos.Y}");
 

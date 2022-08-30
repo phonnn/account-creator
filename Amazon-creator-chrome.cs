@@ -8,82 +8,52 @@ namespace Amazon_console
     {
         public bool OpenChrome()
         {
-            adb.Execute(deviceId, "am force-stop com.android.chrome");
-            adb.Execute(deviceId, "am start -n com.android.chrome/com.google.android.apps.chrome.Main");
-            bool check;
-            string uiXml;
-            int attempt = 0;
-            do
+            adb.Execute(deviceId, "pm clear com.android.chrome");
+            adb.Execute(deviceId, "am start -n com.android.chrome/com.google.android.apps.chrome.Main -d https://www.amazon.com");
+            if (CheckUI("Accept &amp; continue"))
             {
-                if (attempt > 3) break;
-                attempt += 1;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-                check = uiXml.Contains("Accept &amp; continue");
-                if (check)
-                {
-                    (int X, int Y) acceptPos = getTapFromUI(uiXml, "Accept &amp; continue");
-                    adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
-                }
-            } while (!check);
-
-            adb.Sleep(1000);
-            uiXml = GetUI();
-            if (!uiXml.Contains("Turn on sync?"))
+                (int X, int Y) acceptPos = getTapFromUI(uiXml, "Accept &amp; continue");
+                adb.Execute(deviceId, $"input tap {acceptPos.X} {acceptPos.Y}");
+            } 
+            else
             {
-                return false;
+                return true;
             }
 
-            (int X, int Y) syncPos = getTapFromUI(uiXml, "Yes, I'm in");
+            adb.Sleep(1000);
+            if (!CheckUI("Turn on sync?")) return false;
+
+            (int X, int Y) syncPos;
+            try
+            {
+                syncPos = getTapFromUI(uiXml, "Yes, I'm in");
+            } catch 
+            {
+                syncPos = getTapFromUI(uiXml, "No thanks");
+            }
             adb.Execute(deviceId, $"input tap {syncPos.X} {syncPos.Y}");
+
+            adb.Sleep(3000);
+            adb.Execute(deviceId, "input tap 750 310");
 
             return true;
         }
 
-        public bool AmazonSignin()
+        public bool AmazonSigninPage()
         {
-            bool check;
-            string uiXml;
-            int attempt = 0;
+            //Console.WriteLine("open");
 
-            do
-            {
-                if (attempt > 3) return false;
-                attempt++;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-                check = uiXml.Contains("Search or type web address");
-            } while (!check);
+            //if (CheckUI("Search or type web address"))
+            //{
+            //    (int X, int Y) searchPos = getTapFromUI(uiXml, "Search or type web address");
+            //    adb.Execute(deviceId, $"input tap {searchPos.X} {searchPos.Y}");
+            //    adb.Execute(deviceId, "input text \"www.amazon.com\"");
+            //    adb.Execute(deviceId, "input keyevent 66");
+            //    adb.Sleep(2000);
+            //    adb.Execute(deviceId, "input tap 750 310");
+            //}
 
-            (int X, int Y) searchPos = getTapFromUI(uiXml, "Search or type web address");
-            adb.Execute(deviceId, $"input tap {searchPos.X} {searchPos.Y}");
-            QwetyInput("www.amazon.com\n");
-
-            check = false;
-            attempt = 0;
-            do
-            {
-                if (attempt > 3) return false;
-                attempt++;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-                check = uiXml.Contains("Sign In");
-            } while (!check);
-
-            (int X, int Y) signinPos = getTapFromUI(uiXml, "nav-button-avatar");
-            adb.Execute(deviceId, $"input tap {signinPos.X} {signinPos.Y}");
-
-            check = false;
-            attempt = 0;
-            do
-            {
-                if (attempt > 3) return false;
-                attempt++;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-                check = uiXml.Contains("Create account. New to Amazon?");
-            } while (!check);
-
+            if (!CheckUI("Create account. New to Amazon?")) return false;
             (int X, int Y) createPos = getTapFromUI(uiXml, "android.widget.RadioButton");
             adb.Execute(deviceId, $"input tap {createPos.X} {createPos.Y}");
 
@@ -92,40 +62,24 @@ namespace Amazon_console
 
         public bool AmazonRegisterChrome()
         {
-            bool check;
-            string uiXml;
-            int attempt = 0;
-
-            do
-            {
-                if (attempt > 3) return false;
-                attempt++;
-                adb.Sleep(2000);
-                uiXml = GetUI();
-                check = uiXml.Contains("Welcome");
-            } while (!check);
-
-            adb.Execute(deviceId, $"input tap 540 823");
-            QwetyInput(firstName + " " + lastName);
+            adb.Execute(deviceId, "input tap 540 823");
+            adb.Execute(deviceId, $"input text \"{firstName}%s{lastName}\"");
             adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
 
-            adb.Execute(deviceId, $"input tap 540 1080");
-            QwetyInput(mailAddress);
+            adb.Execute(deviceId, "input tap 540 1080");
+            adb.Execute(deviceId, $"input text \"{mailAddress}\"");
             adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
 
-            adb.Execute(deviceId, $"input tap 540 1332");
-            QwetyInput(mailPassword);
-            adb.Execute(deviceId, "input keyevent KEYCODE_BACK");
-
-            adb.Execute(deviceId, $"input tap 540 1176");
+            adb.Execute(deviceId, "input tap 540 1330");
+            adb.Execute(deviceId, $"input text \"anhminh123\"");
+            adb.Execute(deviceId, "input keyevent 66");
 
             //wait for verify
             do
             {
                 adb.Sleep(2000);
                 uiXml = GetUI();
-                check = uiXml.Contains(firstName) | uiXml.Contains(lastName);
-            } while (!check);
+            } while (uiXml.Contains("Verify email address") | uiXml.Contains("Create amazon accounts"));
 
             return true;
         }

@@ -7,6 +7,7 @@ namespace Amazon_console
     internal partial class Creator
     {
         private string deviceId;
+        private string uiXml;
         private readonly string adbPath = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName + "\\adb.exe";
         private readonly ADBClient adb = new();
         private readonly HttpClient client = new();
@@ -21,6 +22,7 @@ namespace Amazon_console
         {
             get { return deviceId; }
         }
+
         private Random rnd = new();
 
         private DateTime RandomDay()
@@ -78,9 +80,24 @@ namespace Amazon_console
 
         public string GetUI()
         {
-            adb.Execute(deviceId, "uiautomator dump");
+            //adb.Execute(deviceId, "uiautomator dump");
             adb.Execute(deviceId, "cat /sdcard/window_dump.xml");
+            Console.WriteLine(adb.Output.Length);
             return adb.Output;
+        }
+        
+        public bool CheckUI(string searchText, int attempt = 5)
+        {
+            bool check;
+            int retries = 0;
+            do
+            {
+                if (retries > attempt) return false;
+                retries++;
+                uiXml = GetUI();
+                check = uiXml.Contains(searchText);
+            } while (!check);
+            return true;
         }
 
         public (int X, int Y) getTapFromUI(string uiXml, string searchText)
